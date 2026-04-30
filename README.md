@@ -1,5 +1,46 @@
-# Go-Around Classification Using ADS-B and METAR Data
+# GoAroundClassification
 
-This repository contains the implementation of a course project developed for **BBL514E Pattern Recognition**, a graduate-level course in the **M.Sc. in Computer Science** program at **Istanbul Technical University**.
+Starter implementation for go-around risk classification using ADS-B + METAR style tabular features.
 
-The objective of this study is to classify whether a landing attempt will result in a **go-around** by using publicly available **ADS-B trajectory data** and **METAR weather observations**. The project is formulated as a supervised binary classification problem and includes data preprocessing, feature engineering, model training, evaluation, and a lightweight deployment pipeline.
+## Quickstart
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+python -m goaround.train --data /path/to/go_arounds_augmented.csv.gz --target go_around --model logreg
+uvicorn goaround.api.app:app --reload
+```
+
+## Project structure
+
+- `src/goaround/data`: loading, cleaning, splitting
+- `src/goaround/features`: preprocessing pipeline
+- `src/goaround/models`: model factory (logreg, LDA, RF, MLP)
+- `src/goaround/eval`: classification metrics
+- `src/goaround/api`: FastAPI inference API
+- `web/`: minimal static page
+
+## API
+
+- `GET /health`
+- `POST /predict` with payload:
+
+```json
+{
+  "features": {
+    "airport": "KJFK",
+    "wind_speed": 15.0,
+    "visibility": 6000
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "prediction": 0,
+  "probability": 0.12
+}
+```
