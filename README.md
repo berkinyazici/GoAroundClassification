@@ -1,6 +1,16 @@
-# GoAroundClassification
+# Go-Around Classification
 
-Starter implementation for go-around risk classification using ADS-B + METAR style tabular features.
+This repository is a complete Python project skeleton for binary go-around pattern recognition, including data preparation, model experimentation, FastAPI deployment, and a simple HTML frontend.
+
+## Project structure
+
+- `app/` — FastAPI backend, model loader, API schemas, and web UI assets.
+- `src/` — experiment configuration, data engineering, feature building, model training, evaluation, and CLI.
+- `data/` — local dataset storage for raw, interim, and processed files.
+- `models/` — trained model artifacts.
+- `reports/` — metrics, figures, and written documentation.
+- `notebooks/` — exploratory notebooks.
+- `tests/` — unit and integration test stubs.
 
 ## Quickstart
 
@@ -8,60 +18,71 @@ Starter implementation for go-around risk classification using ADS-B + METAR sty
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
-
-# single training run
-python -m goaround.train --data /path/to/go_arounds_augmented.csv.gz --target go_around --model logreg
-
-# config-driven run (airport-aware split)
-python -m goaround.train --data /path/to/go_arounds_augmented.csv.gz --config configs/adsb_only.yaml
-
-# ablation
-python scripts/run_ablation.py --data /path/to/go_arounds_augmented.csv.gz
-
-# serve API
-uvicorn goaround.api.app:app --reload
 ```
 
-## What is implemented now
+### Run data validation and preprocessing
 
-- Config-driven experiment runs (`--config` with YAML)
-- Split modes: `random`, `airport` (group-based), `time` (chronological)
-- Model families: Logistic Regression, LDA, Random Forest, MLP
-- Metrics: PR-AUC, ROC-AUC, F1, Precision, Recall, Balanced Accuracy
-- Run artifacts saved to timestamped run folders under `artifacts/<run_id>/`
-- Ablation helper script: ADS-B only vs ADS-B + METAR
+```bash
+python -m src.cli verify
+python -m src.cli prepare
+python -m src.cli split --target target
+```
 
-## Project structure
+### Train a model
 
-- `src/goaround/data`: loading, cleaning, splitting
-- `src/goaround/features`: preprocessing pipeline
-- `src/goaround/models`: model factory (logreg, LDA, RF, MLP)
-- `src/goaround/eval`: classification metrics
-- `src/goaround/api`: FastAPI inference API
-- `configs/`: experiment configs (ablation feature sets)
-- `scripts/`: helper scripts (ablation runner)
-- `web/`: minimal static page
+```bash
+python -m src.cli train --model logreg --target target
+```
 
-## API
+### Evaluate the selected model
 
-- `GET /health`
-- `POST /predict` with payload:
+```bash
+python -m src.cli evaluate --target target
+```
+
+### Serve the API locally
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### Docker
+
+```bash
+docker compose up --build
+```
+
+## API endpoints
+
+- `GET /health` — health check.
+- `GET /` — simple web interface.
+- `POST /predict` — model prediction endpoint.
+
+Example request:
 
 ```json
 {
   "features": {
-    "airport": "KJFK",
-    "wind_speed": 15.0,
-    "visibility": 6000
-  }
+    "feature_1": 1.0,
+    "feature_2": 0.5
+  },
+  "model_name": "logreg"
 }
 ```
 
-Response:
+Example response:
 
 ```json
 {
   "prediction": 0,
-  "probability": 0.12
+  "probability": 0.12,
+  "model": "logreg"
 }
 ```
+
+## Notes
+
+- The dataset is expected to exist locally under `data/raw/`.
+- Training scripts write processed data under `data/processed/`.
+- The default deployed model is loaded from `models/best_model.joblib`.
+- Use `src/cli.py` to run verify, preprocessing, training, evaluation, and serve workflows.

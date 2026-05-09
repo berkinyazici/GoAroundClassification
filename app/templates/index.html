@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Go-Around Classification</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Go-Around Classification</h1>
+      <p>Submit a feature payload for binary go-around prediction.</p>
+
+      <form id="predict-form">
+        <label for="features">Features (JSON):</label>
+        <textarea id="features" name="features" rows="10">{
+  "feature_1": 0.7,
+  "feature_2": 12.5,
+  "feature_3": 1
+}</textarea>
+
+        <label for="model_name">Model:</label>
+        <select id="model_name" name="model_name">
+          <option value="logreg">Logistic Regression</option>
+          <option value="lda">LDA</option>
+          <option value="tree">Decision Tree</option>
+          <option value="mlp">MLP</option>
+          <option value="lightgbm">LightGBM</option>
+        </select>
+
+        <button type="submit">Predict</button>
+      </form>
+
+      <section id="output" class="hidden">
+        <h2>Prediction Result</h2>
+        <pre id="result"></pre>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
