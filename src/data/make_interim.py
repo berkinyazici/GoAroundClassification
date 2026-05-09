@@ -11,12 +11,17 @@ def make_interim() -> Path:
     frames = []
 
     for source in sources:
-        if source.suffix.lower() == ".csv":
-            frames.append(pd.read_csv(source))
-        elif source.suffix.lower() == ".parquet":
+        source_name = source.name.lower()
+        if source_name.endswith((".csv", ".csv.gz")):
+            frames.append(pd.read_csv(source, compression="infer", low_memory=False))
+        elif source_name.endswith((".xlsx", ".xls")):
+            frames.append(pd.read_excel(source))
+        elif source_name.endswith(".parquet"):
             frames.append(pd.read_parquet(source))
-        elif source.suffix.lower() == ".feather":
+        elif source_name.endswith(".feather"):
             frames.append(pd.read_feather(source))
+        else:
+            print(f"Skipping unsupported raw file: {source}")
 
     if not frames:
         raise RuntimeError("No interim data was created because no raw sources were loaded.")

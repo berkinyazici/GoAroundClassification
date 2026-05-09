@@ -8,7 +8,11 @@ def verify_local_data() -> List[Path]:
     if not RAW_DIR.exists():
         raise FileNotFoundError(f"Raw data directory not found: {RAW_DIR}")
 
-    candidates = [*RAW_DIR.glob("*.csv"), *RAW_DIR.glob("*.parquet"), *RAW_DIR.glob("*.feather")]
+    patterns = ["*.csv", "*.csv.gz", "*.parquet", "*.feather", "*.xlsx", "*.xls"]
+    candidates: list[Path] = []
+    for pattern in patterns:
+        candidates.extend(RAW_DIR.glob(pattern))
+
     if not candidates:
         raise FileNotFoundError(f"No raw data files found in {RAW_DIR}")
 

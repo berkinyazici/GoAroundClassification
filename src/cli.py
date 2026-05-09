@@ -1,5 +1,6 @@
 import argparse
 import subprocess
+import sys
 from pathlib import Path
 
 from src.config import MODEL_DIR
@@ -47,8 +48,12 @@ def main() -> None:
         print(f"Train split: {train_path}\nTest split: {test_path}")
     elif args.command == "train":
         MODEL_DIR.mkdir(parents=True, exist_ok=True)
-        model_script = Path(__file__).resolve().parent / "models" / f"train_{args.model}.py"
-        subprocess.run(["python", str(model_script), "--target", args.target], check=True)
+        module_name = f"src.models.train_{args.model}"
+        subprocess.run(
+            [sys.executable, "-m", module_name, "--target", args.target],
+            check=True,
+            cwd=Path(__file__).resolve().parent.parent,
+        )
     elif args.command == "evaluate":
         metrics = evaluate_model(target=args.target)
         print("Evaluation results:")
@@ -57,6 +62,8 @@ def main() -> None:
     elif args.command == "serve":
         subprocess.run(
             [
+                sys.executable,
+                "-m",
                 "uvicorn",
                 "app.main:app",
                 "--host",
@@ -65,6 +72,7 @@ def main() -> None:
                 str(args.port),
             ],
             check=True,
+            cwd=Path(__file__).resolve().parent.parent,
         )
 
 
