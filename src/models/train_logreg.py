@@ -28,10 +28,10 @@ def train_logreg(feature_set: str = "context_metar", sample_frac: float | None =
     X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set, sample_frac)
 
     preprocessor = create_preprocessor(num_feats, cat_feats)
-    clf = LogisticRegression(class_weight="balanced", max_iter=1000, solver="saga", n_jobs=-1, verbose=1)
+    clf = LogisticRegression(class_weight="balanced", max_iter=1000, solver="lbfgs", verbose=0)
     pipe = Pipeline([("pre", preprocessor), ("clf", clf)])
 
-    print(f"  Fitting Logistic Regression (solver=saga, verbose=1) ...")
+    print(f"  Fitting Logistic Regression (solver=lbfgs) ...")
     t0 = time.time()
     pipe.fit(X_tr, y_tr)
     print(f"  Fit done [{time.time()-t0:.1f}s]")
