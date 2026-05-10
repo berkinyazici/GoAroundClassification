@@ -116,11 +116,8 @@ def evaluate_binary_classifier(
 
 def tune_threshold_for_f1(y_true: np.ndarray, y_prob: np.ndarray) -> float:
     precisions, recalls, thresholds = precision_recall_curve(y_true, y_prob)
-    f1s = np.where(
-        (precisions[:-1] + recalls[:-1]) > 0,
-        2 * precisions[:-1] * recalls[:-1] / (precisions[:-1] + recalls[:-1]),
-        0.0,
-    )
+    denom = precisions[:-1] + recalls[:-1]
+    f1s = np.where(denom > 0, 2 * precisions[:-1] * recalls[:-1] / np.maximum(denom, 1e-9), 0.0)
     best_idx = int(np.argmax(f1s))
     return float(thresholds[best_idx])
 
