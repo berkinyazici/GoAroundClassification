@@ -8,7 +8,9 @@ __pycache__/
 ruff_cache/
 /data/
 /models/
-/reports/
-/notebooks/
+/reports/metrics/
+/reports/figures/
+/notebooks/*
+!notebooks/.gitkeep
 __pypackages__/
 .DS_Store

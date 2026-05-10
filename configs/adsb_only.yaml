@@ -1,17 +1,25 @@
 model: logreg
-target: go_around
-split_mode: airport
+target: target
+split_mode: time
 seed: 42
-group_col: airport
+feature_set: adsb_only
 features:
-  - altitude
-  - vertical_rate
-  - ground_speed
-  - heading_change
-  - distance_to_threshold
-  - runway_alignment
-  - approach_roll_mean_altitude
-  - approach_roll_mean_speed
-  - airport
-  - runway
-  - go_around
+  numeric:
+    - n_approaches
+    - n_rwy_approached
+    - glide_slope_angle
+    - rwy_length
+    - month
+    - day_of_week
+    - hour_utc
+  categorical:
+    - airport
+    - runway
+    - typecode
+    - icaoaircrafttype
+    - wtc
+    - has_intersection
+    - airport_country
+    - airport_region
+    - operator_country
+    - operator_region
