@@ -1,0 +1,22 @@
+{
+  "test_accuracy": 0.99801,
+  "test_precision": 0.848214,
+  "test_recall": 0.590062,
+  "test_f1": 0.695971,
+  "test_roc_auc": 0.993617,
+  "test_average_precision": 0.762228,
+  "test_confusion_matrix": [
+    [
+      83046,
+      34
+    ],
+    [
+      132,
+      190
+    ]
+  ],
+  "test_threshold": 0.35371498286706565,
+  "model_name": "mlp",
+  "feature_set": "context_metar",
+  "threshold": 0.35371498286706565
+}

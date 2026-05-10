@@ -1,0 +1,39 @@
+{
+  "model": "random_forest",
+  "feature_set": "context_metar",
+  "best_threshold": 0.6632331458398011,
+  "validation_accuracy": 0.988726,
+  "validation_precision": 0.229856,
+  "validation_recall": 0.877023,
+  "validation_f1": 0.364247,
+  "validation_roc_auc": 0.994106,
+  "validation_average_precision": 0.667042,
+  "validation_confusion_matrix": [
+    [
+      82696,
+      908
+    ],
+    [
+      38,
+      271
+    ]
+  ],
+  "validation_threshold": 0.5,
+  "test_accuracy": 0.997038,
+  "test_precision": 0.606838,
+  "test_recall": 0.661491,
+  "test_f1": 0.632987,
+  "test_roc_auc": 0.993997,
+  "test_average_precision": 0.685886,
+  "test_confusion_matrix": [
+    [
+      82942,
+      138
+    ],
+    [
+      109,
+      213
+    ]
+  ],
+  "test_threshold": 0.6632331458398011
+}

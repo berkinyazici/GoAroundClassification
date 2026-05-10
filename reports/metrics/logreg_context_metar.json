@@ -1,0 +1,39 @@
+{
+  "model": "logreg",
+  "feature_set": "context_metar",
+  "best_threshold": 0.9986753521471547,
+  "validation_accuracy": 0.964654,
+  "validation_precision": 0.089589,
+  "validation_recall": 0.938511,
+  "validation_f1": 0.163565,
+  "validation_roc_auc": 0.99012,
+  "validation_average_precision": 0.585657,
+  "validation_confusion_matrix": [
+    [
+      80657,
+      2947
+    ],
+    [
+      19,
+      290
+    ]
+  ],
+  "validation_threshold": 0.5,
+  "test_accuracy": 0.997134,
+  "test_precision": 0.623145,
+  "test_recall": 0.652174,
+  "test_f1": 0.637329,
+  "test_roc_auc": 0.992092,
+  "test_average_precision": 0.649039,
+  "test_confusion_matrix": [
+    [
+      82953,
+      127
+    ],
+    [
+      112,
+      210
+    ]
+  ],
+  "test_threshold": 0.9986753521471547
+}

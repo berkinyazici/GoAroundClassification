@@ -1,0 +1,39 @@
+{
+  "model": "random_forest",
+  "feature_set": "context_only",
+  "best_threshold": 0.4487922645587731,
+  "validation_accuracy": 0.994399,
+  "validation_precision": 0.0,
+  "validation_recall": 0.0,
+  "validation_f1": 0.0,
+  "validation_roc_auc": 0.487761,
+  "validation_average_precision": 0.003706,
+  "validation_confusion_matrix": [
+    [
+      83443,
+      161
+    ],
+    [
+      309,
+      0
+    ]
+  ],
+  "validation_threshold": 0.5,
+  "test_accuracy": 0.908144,
+  "test_precision": 0.004858,
+  "test_recall": 0.111801,
+  "test_f1": 0.009311,
+  "test_roc_auc": 0.497628,
+  "test_average_precision": 0.004026,
+  "test_confusion_matrix": [
+    [
+      75705,
+      7375
+    ],
+    [
+      286,
+      36
+    ]
+  ],
+  "test_threshold": 0.4487922645587731
+}

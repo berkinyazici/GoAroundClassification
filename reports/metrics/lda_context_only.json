@@ -1,0 +1,39 @@
+{
+  "model": "lda",
+  "feature_set": "context_only",
+  "best_threshold": 0.007460951168250694,
+  "validation_accuracy": 0.996318,
+  "validation_precision": 0.0,
+  "validation_recall": 0.0,
+  "validation_f1": 0.0,
+  "validation_roc_auc": 0.492045,
+  "validation_average_precision": 0.003755,
+  "validation_confusion_matrix": [
+    [
+      83604,
+      0
+    ],
+    [
+      309,
+      0
+    ]
+  ],
+  "validation_threshold": 0.5,
+  "test_accuracy": 0.977207,
+  "test_precision": 0.006254,
+  "test_recall": 0.031056,
+  "test_f1": 0.010411,
+  "test_roc_auc": 0.497473,
+  "test_average_precision": 0.004162,
+  "test_confusion_matrix": [
+    [
+      81491,
+      1589
+    ],
+    [
+      312,
+      10
+    ]
+  ],
+  "test_threshold": 0.007460951168250694
+}
