@@ -72,6 +72,9 @@ def convert_augmented() -> None:
 
 
 def convert_agg() -> None:
+    if not AGG_CSV_GZ.exists():
+        print(f"  Skipping agg file (not present).")
+        return
     print("Reading go_arounds_agg.csv.gz ...")
     df = pl.read_csv(AGG_CSV_GZ, infer_schema_length=1000, ignore_errors=True)
     print(f"  Raw shape: {df.shape}")
