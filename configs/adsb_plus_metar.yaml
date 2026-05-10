@@ -1,24 +1,37 @@
-model: logreg
-target: go_around
-split_mode: airport
+model: lightgbm
+target: target
+split_mode: time
 seed: 42
-group_col: airport
+feature_set: adsb_plus_metar
 features:
-  - altitude
-  - vertical_rate
-  - ground_speed
-  - heading_change
-  - distance_to_threshold
-  - runway_alignment
-  - approach_roll_mean_altitude
-  - approach_roll_mean_speed
-  - wind_speed
-  - wind_direction
-  - wind_gust
-  - visibility
-  - pressure
-  - temperature
-  - weather_code
-  - airport
-  - runway
-  - go_around
+  numeric:
+    - n_approaches
+    - n_rwy_approached
+    - glide_slope_angle
+    - rwy_length
+    - wind_speed_knts
+    - wind_dir_deg
+    - wind_gust_knts
+    - visibility_m
+    - temperature_deg
+    - press_sea_level_p
+    - press_p
+    - month
+    - day_of_week
+    - hour_utc
+  categorical:
+    - airport
+    - runway
+    - typecode
+    - icaoaircrafttype
+    - wtc
+    - has_intersection
+    - airport_country
+    - airport_region
+    - operator_country
+    - operator_region
+    - weather_intensity
+    - weather_precipitation
+    - weather_desc
+    - weather_obscuration
+    - weather_other

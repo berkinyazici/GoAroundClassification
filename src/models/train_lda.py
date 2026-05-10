@@ -1,33 +1,19 @@
+from __future__ import annotations
+
+import argparse
 from pathlib import Path
 
-from joblib import dump
-from src.config import MODEL_DIR, MODEL_PATH, PROCESSED_DIR
-from src.models.common import get_classifier
-import pandas as pd
+from src.models.train_model import train_model
 
 
-def train_lda(target: str = "target") -> Path:
-    train_path = PROCESSED_DIR / "train.parquet"
-    if not train_path.exists():
-        raise FileNotFoundError("Train split not found. Run src.data.make_splits first.")
-
-    df = pd.read_parquet(train_path)
-    X = df.drop(columns=[target])
-    y = df[target]
-    model = get_classifier("lda")
-    model.fit(X, y)
-    output_path = MODEL_PATH.with_name("lda.joblib")
-    MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    dump(model, output_path)
-    return output_path
+def train_lda(target: str = "target", feature_set: str = "adsb_plus_metar") -> Path:
+    return train_model(model_name="lda", feature_set=feature_set)
 
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Train LDA model")
-    parser.add_argument("--target", default="target", help="Target column name")
+    parser = argparse.ArgumentParser(description="Train lda model")
+    parser.add_argument("--target", default="target")
+    parser.add_argument("--feature-set", default="adsb_plus_metar", choices=["adsb_only", "metar_only", "adsb_plus_metar"])
     args = parser.parse_args()
-
-    path = train_lda(target=args.target)
-    print(f"Saved LDA model to {path}")
+    path = train_lda(target=args.target, feature_set=args.feature_set)
+    print(f"Saved lda model to {path}")

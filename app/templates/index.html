@@ -9,25 +9,44 @@
   <body>
     <main>
       <h1>Go-Around Classification</h1>
-      <p>Submit a feature payload for binary go-around prediction.</p>
+      <p>
+        Submit one landing record from the ADS-B + METAR feature schema. The backend returns the predicted class and go-around probability.
+      </p>
+      <p class="notice">Loaded model: <strong>{{ model_name }}</strong></p>
 
       <form id="predict-form">
-        <label for="features">Features (JSON):</label>
-        <textarea id="features" name="features" rows="10">{
-  "feature_1": 0.7,
-  "feature_2": 12.5,
-  "feature_3": 1
+        <label for="features">Landing features (JSON):</label>
+        <textarea id="features" name="features" rows="18">{
+  "n_approaches": 1,
+  "n_rwy_approached": 1,
+  "glide_slope_angle": 3.0,
+  "rwy_length": 3500,
+  "wind_speed_knts": 18,
+  "wind_dir_deg": 240,
+  "wind_gust_knts": 28,
+  "visibility_m": 3500,
+  "temperature_deg": 12,
+  "press_sea_level_p": 1012,
+  "press_p": 1009,
+  "month": 11,
+  "day_of_week": 2,
+  "hour_utc": 17,
+  "airport": "EDDF",
+  "runway": "25L",
+  "typecode": "A320",
+  "icaoaircrafttype": "L2J",
+  "wtc": "M",
+  "has_intersection": "False",
+  "airport_country": "DE",
+  "airport_region": "Europe",
+  "operator_country": "DE",
+  "operator_region": "Europe",
+  "weather_intensity": "UNKNOWN",
+  "weather_precipitation": "RA",
+  "weather_desc": "SHOWERS",
+  "weather_obscuration": "UNKNOWN",
+  "weather_other": "UNKNOWN"
 }</textarea>
-
-        <label for="model_name">Model:</label>
-        <select id="model_name" name="model_name">
-          <option value="logreg">Logistic Regression</option>
-          <option value="lda">LDA</option>
-          <option value="tree">Decision Tree</option>
-          <option value="mlp">MLP</option>
-          <option value="lightgbm">LightGBM</option>
-        </select>
-
         <button type="submit">Predict</button>
       </form>
 
