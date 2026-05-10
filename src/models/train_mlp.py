@@ -1,5 +1,7 @@
 """Train MLP (Multi-Layer Perceptron) neural baseline for go-around classification."""
+import argparse
 import sys
+import time
 from pathlib import Path
 
 from sklearn.neural_network import MLPClassifier
@@ -15,9 +17,9 @@ from src.models.common import (
 FEATURE_SETS = ["context_only", "context_metar"]
 
 
-def train_mlp(feature_set: str = "context_metar") -> dict:
+def train_mlp(feature_set: str = "context_metar", sample_frac: float | None = None) -> dict:
     print(f"\n=== MLP [{feature_set}] ===")
-    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set)
+    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set, sample_frac)
 
     preprocessor = create_preprocessor(num_feats, cat_feats)
     clf = MLPClassifier(
@@ -28,12 +30,18 @@ def train_mlp(feature_set: str = "context_metar") -> dict:
         early_stopping=True,
         validation_fraction=0.1,
         random_state=42,
-        verbose=False,
+        verbose=True,
     )
     pipe = Pipeline([("pre", preprocessor), ("clf", clf)])
-    pipe.fit(X_tr, y_tr)
 
+    print(f"  Fitting MLP (early_stopping=True, verbose shows each epoch) ...")
+    t0 = time.time()
+    pipe.fit(X_tr, y_tr)
+    print(f"  Fit done [{time.time()-t0:.1f}s]  iterations={pipe.named_steps['clf'].n_iter_}")
+
+    print("  Predicting on validation ...")
     va_prob = pipe.predict_proba(X_va)[:, 1]
+    print("  Predicting on test ...")
     te_prob = pipe.predict_proba(X_te)[:, 1]
     best_thresh = tune_threshold_for_f1(y_va.values, va_prob)
 
@@ -52,8 +60,11 @@ def train_mlp(feature_set: str = "context_metar") -> dict:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sample-frac", type=float, default=None)
+    args = parser.parse_args()
     for fs in FEATURE_SETS:
-        train_mlp(fs)
+        train_mlp(fs, args.sample_frac)
 
 
 if __name__ == "__main__":

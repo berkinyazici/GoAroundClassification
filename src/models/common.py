@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -28,16 +29,31 @@ from src.features.build_features import load_data, build_feature_matrix
 # Data loading                                                                 #
 # --------------------------------------------------------------------------- #
 
-def load_splits(feature_set: str = "context_metar") -> tuple:
+def load_splits(feature_set: str = "context_metar", sample_frac: float | None = None) -> tuple:
     """Return (X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats)."""
+    print(f"  Loading splits (feature_set={feature_set}) ...")
+    t0 = time.time()
+
     train = load_data(TRAIN_PARQUET)
     valid = load_data(VALID_PARQUET)
     test  = load_data(TEST_PARQUET)
+
+    if sample_frac is not None and sample_frac < 1.0:
+        # Stratified sample to preserve go-around rate
+        pos_tr = train[train["target"] == 1]
+        neg_tr = train[train["target"] == 0].sample(
+            frac=sample_frac, random_state=42
+        )
+        train = pd.concat([pos_tr, neg_tr]).sample(frac=1, random_state=42)
+        print(f"  Train sampled: {len(train):,} rows ({int(train['target'].sum())} go-arounds)")
+
+    print(f"  Train: {len(train):,}  Valid: {len(valid):,}  Test: {len(test):,}")
 
     X_tr, y_tr, num_feats, cat_feats = build_feature_matrix(train, feature_set)
     X_va, y_va, _,         _         = build_feature_matrix(valid, feature_set)
     X_te, y_te, _,         _         = build_feature_matrix(test,  feature_set)
 
+    print(f"  Features: {len(num_feats)} numeric + {len(cat_feats)} categorical  [{time.time()-t0:.1f}s]")
     return X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats
 
 
@@ -45,14 +61,24 @@ def load_splits(feature_set: str = "context_metar") -> tuple:
 # Preprocessing                                                                #
 # --------------------------------------------------------------------------- #
 
-def create_preprocessor(numeric_features: list[str], categorical_features: list[str]) -> ColumnTransformer:
+def create_preprocessor(numeric_features: list[str], categorical_features: list[str],
+                        ohe_min_frequency: int = 2000) -> ColumnTransformer:
+    """
+    ohe_min_frequency: a category must appear at least this many times in the
+    training set to get its own OHE column (others → 'infrequent_sklearn').
+    2000 out of ~5.6M rows ≈ top airports/runways only → keeps RAM manageable.
+    """
     numeric_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("scaler",  StandardScaler()),
     ])
     categorical_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", OneHotEncoder(handle_unknown="ignore", min_frequency=50, sparse_output=False)),
+        ("encoder", OneHotEncoder(
+            handle_unknown="ignore",
+            min_frequency=ohe_min_frequency,
+            sparse_output=False,
+        )),
     ])
     return ColumnTransformer(
         transformers=[

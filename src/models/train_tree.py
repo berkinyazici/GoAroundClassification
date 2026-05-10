@@ -1,5 +1,7 @@
 """Train Random Forest classifier for go-around classification."""
+import argparse
 import sys
+import time
 from pathlib import Path
 
 import matplotlib
@@ -20,9 +22,10 @@ FEATURE_SETS = ["context_only", "context_metar"]
 
 
 def train_tree(feature_set: str = "context_metar", n_estimators: int = 200,
-               max_depth: int | None = 15, min_samples_leaf: int = 20) -> dict:
+               max_depth: int | None = 15, min_samples_leaf: int = 50,
+               sample_frac: float | None = None) -> dict:
     print(f"\n=== Random Forest [{feature_set}] ===")
-    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set)
+    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set, sample_frac)
 
     preprocessor = create_preprocessor(num_feats, cat_feats)
     clf = RandomForestClassifier(
@@ -32,11 +35,18 @@ def train_tree(feature_set: str = "context_metar", n_estimators: int = 200,
         class_weight="balanced_subsample",
         n_jobs=-1,
         random_state=42,
+        verbose=1,
     )
     pipe = Pipeline([("pre", preprocessor), ("clf", clf)])
-    pipe.fit(X_tr, y_tr)
 
+    print(f"  Preprocessing ...")
+    t0 = time.time()
+    pipe.fit(X_tr, y_tr)
+    print(f"  Fit done [{time.time()-t0:.1f}s]")
+
+    print("  Predicting on validation ...")
     va_prob = pipe.predict_proba(X_va)[:, 1]
+    print("  Predicting on test ...")
     te_prob = pipe.predict_proba(X_te)[:, 1]
     best_thresh = tune_threshold_for_f1(y_va.values, va_prob)
 
@@ -74,8 +84,14 @@ def train_tree(feature_set: str = "context_metar", n_estimators: int = 200,
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sample-frac", type=float, default=None)
+    parser.add_argument("--n-estimators", type=int, default=200)
+    parser.add_argument("--max-depth", type=int, default=15)
+    args = parser.parse_args()
     for fs in FEATURE_SETS:
-        train_tree(fs)
+        train_tree(fs, n_estimators=args.n_estimators, max_depth=args.max_depth,
+                   sample_frac=args.sample_frac)
 
 
 if __name__ == "__main__":

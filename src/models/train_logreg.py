@@ -5,7 +5,9 @@ Probabilistic model:  p(y=1|x) = σ(wᵀx + b),  σ(z) = 1/(1+e⁻ᶻ)
 Decision rule:        ŷ = 1  if  p(y=1|x) ≥ τ,  else 0.
 Loss:                 L = -1/N Σ [y_i log p_i + (1-y_i) log(1-p_i)]
 """
+import argparse
 import sys
+import time
 from pathlib import Path
 
 from sklearn.linear_model import LogisticRegression
@@ -21,16 +23,22 @@ from src.models.common import (
 FEATURE_SETS = ["context_only", "context_metar"]
 
 
-def train_logreg(feature_set: str = "context_metar") -> dict:
+def train_logreg(feature_set: str = "context_metar", sample_frac: float | None = None) -> dict:
     print(f"\n=== Logistic Regression [{feature_set}] ===")
-    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set)
+    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set, sample_frac)
 
     preprocessor = create_preprocessor(num_feats, cat_feats)
-    clf = LogisticRegression(class_weight="balanced", max_iter=1000, solver="lbfgs", n_jobs=-1)
+    clf = LogisticRegression(class_weight="balanced", max_iter=1000, solver="saga", n_jobs=-1, verbose=1)
     pipe = Pipeline([("pre", preprocessor), ("clf", clf)])
-    pipe.fit(X_tr, y_tr)
 
+    print(f"  Fitting Logistic Regression (solver=saga, verbose=1) ...")
+    t0 = time.time()
+    pipe.fit(X_tr, y_tr)
+    print(f"  Fit done [{time.time()-t0:.1f}s]")
+
+    print("  Predicting on validation ...")
     va_prob = pipe.predict_proba(X_va)[:, 1]
+    print("  Predicting on test ...")
     te_prob = pipe.predict_proba(X_te)[:, 1]
     best_thresh = tune_threshold_for_f1(y_va.values, va_prob)
 
@@ -49,8 +57,11 @@ def train_logreg(feature_set: str = "context_metar") -> dict:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sample-frac", type=float, default=None)
+    args = parser.parse_args()
     for fs in FEATURE_SETS:
-        train_logreg(fs)
+        train_logreg(fs, args.sample_frac)
 
 
 if __name__ == "__main__":
