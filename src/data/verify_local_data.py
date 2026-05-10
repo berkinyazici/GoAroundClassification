@@ -11,10 +11,10 @@ def verify_local_data() -> List[Path]:
     patterns = ["*.csv", "*.csv.gz", "*.parquet", "*.feather", "*.xlsx", "*.xls"]
     candidates: list[Path] = []
     for pattern in patterns:
-        candidates.extend(RAW_DIR.glob(pattern))
+        candidates.extend(RAW_DIR.rglob(pattern))
 
     if not candidates:
-        raise FileNotFoundError(f"No raw data files found in {RAW_DIR}")
+        raise FileNotFoundError(f"No raw data files found in {RAW_DIR} or its subdirectories")
 
     return sorted(candidates)
 

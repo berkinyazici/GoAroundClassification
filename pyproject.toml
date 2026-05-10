@@ -7,7 +7,7 @@ name = "go-around-classification"
 version = "0.1.0"
 description = "Binary pattern recognition classification and deployment for go-around prediction."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
   "polars>=0.20",
   "pandas>=2.0",

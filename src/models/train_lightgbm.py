@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from joblib import dump
+from sklearn.metrics import accuracy_score
 from src.config import MODEL_DIR, MODEL_PATH, PROCESSED_DIR
 from src.models.common import get_classifier
 import pandas as pd
@@ -15,7 +16,11 @@ def train_lightgbm(target: str = "target") -> Path:
     X = df.drop(columns=[target])
     y = df[target]
     model = get_classifier("lightgbm")
+    print("Training LightGBM...")
     model.fit(X, y)
+    y_pred = model.predict(X)
+    acc = accuracy_score(y, y_pred)
+    print(f"Train accuracy: {acc:.4f}")
     output_path = MODEL_PATH.with_name("lightgbm.joblib")
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     dump(model, output_path)

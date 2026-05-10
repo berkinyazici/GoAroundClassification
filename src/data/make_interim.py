@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+from tqdm import tqdm
 
 from src.config import INTERIM_DIR, RAW_DIR
 from src.data.verify_local_data import verify_local_data
@@ -10,7 +11,8 @@ def make_interim() -> Path:
     sources = verify_local_data()
     frames = []
 
-    for source in sources:
+    print(f"Found {len(sources)} raw source file(s) for interim dataset.")
+    for source in tqdm(sources, desc="Loading raw sources", unit="file"):
         source_name = source.name.lower()
         if source_name.endswith((".csv", ".csv.gz")):
             frames.append(pd.read_csv(source, compression="infer", low_memory=False))
@@ -27,8 +29,9 @@ def make_interim() -> Path:
         raise RuntimeError("No interim data was created because no raw sources were loaded.")
 
     dataset = pd.concat(frames, ignore_index=True)
-    output_path = INTERIM_DIR / "dataset.parquet"
-    dataset.to_parquet(output_path)
+    output_path = INTERIM_DIR / "dataset.csv"
+    print(f"Saving interim dataset with shape {dataset.shape} to {output_path}")
+    dataset.to_csv(output_path, index=False)
     return output_path
 
 

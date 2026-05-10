@@ -17,7 +17,8 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("verify", help="Verify raw dataset is present locally")
-    subparsers.add_parser("prepare", help="Build interim dataset from local raw data")
+    prepare_parser = subparsers.add_parser("prepare", help="Build interim dataset from local raw data")
+    prepare_parser.add_argument("--target", default="target", help="Target column name (unused in prepare)")
 
     split_parser = subparsers.add_parser("split", help="Create train/test splits")
     split_parser.add_argument("--target", default="target", help="Target column name")
