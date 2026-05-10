@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go-Around Classifier</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>&#9992; Go-Around Risk Classifier</h1>
+    <p class="subtitle">Binary classification using ADS-B &amp; METAR features &mdash; BBL514E Term Project</p>
+  </header>
+
+  <!-- Input form -->
+  <div class="card">
+    <h2>Input Features</h2>
+
+    <div style="font-size:0.82rem; color:#64748b; margin-bottom:1rem;">
+      Fill in any known features. Leave unknown fields empty — they will be imputed by the model.
+    </div>
+
+    <!-- Operational / Context -->
+    <h3 style="font-size:0.88rem; color:#7dd3fc; margin-bottom:0.8rem;">Operational &amp; Context</h3>
+    <div class="form-grid">
+      <div class="field"><label for="airport">Airport (ICAO)</label><input id="airport" placeholder="e.g. EDDF" /></div>
+      <div class="field"><label for="runway">Runway</label><input id="runway" placeholder="e.g. 25L" /></div>
+      <div class="field">
+        <label for="wtc">Wake Turbulence Category</label>
+        <select id="wtc">
+          <option value="">-- select --</option>
+          <option>L</option><option>M</option><option>H</option><option>J</option>
+        </select>
+      </div>
+      <div class="field"><label for="typecode">Aircraft Type (ICAO)</label><input id="typecode" placeholder="e.g. A320" /></div>
+      <div class="field"><label for="icaoaircrafttype">ICAO Aircraft Category</label><input id="icaoaircrafttype" placeholder="e.g. L2J" /></div>
+      <div class="field"><label for="airport_country">Airport Country</label><input id="airport_country" placeholder="e.g. DE" /></div>
+      <div class="field"><label for="airport_region">Airport Region</label><input id="airport_region" placeholder="e.g. EU" /></div>
+      <div class="field"><label for="operator_country">Operator Country</label><input id="operator_country" placeholder="e.g. DE" /></div>
+      <div class="field"><label for="operator_region">Operator Region</label><input id="operator_region" placeholder="e.g. EU" /></div>
+      <div class="field">
+        <label for="has_intersection">Intersection Approach</label>
+        <select id="has_intersection">
+          <option value="">-- select --</option>
+          <option value="0">No</option><option value="1">Yes</option>
+        </select>
+      </div>
+      <div class="field"><label for="n_approaches">Number of Approaches</label><input id="n_approaches" type="number" placeholder="e.g. 1" /></div>
+      <div class="field"><label for="n_rwy_approached">Runways Approached</label><input id="n_rwy_approached" type="number" placeholder="e.g. 1" /></div>
+      <div class="field"><label for="glide_slope_angle">Glide Slope Angle (°)</label><input id="glide_slope_angle" type="number" step="0.1" placeholder="e.g. 3.0" /></div>
+      <div class="field"><label for="rwy_length">Runway Length (m)</label><input id="rwy_length" type="number" placeholder="e.g. 4000" /></div>
+    </div>
+
+    <!-- Time features -->
+    <h3 style="font-size:0.88rem; color:#7dd3fc; margin:1.2rem 0 0.8rem;">Time</h3>
+    <div class="form-grid">
+      <div class="field"><label for="month">Month (1–12)</label><input id="month" type="number" min="1" max="12" placeholder="e.g. 5" /></div>
+      <div class="field"><label for="day_of_week">Day of Week (0=Mon)</label><input id="day_of_week" type="number" min="0" max="6" placeholder="e.g. 2" /></div>
+      <div class="field"><label for="hour_utc">Hour UTC (0–23)</label><input id="hour_utc" type="number" min="0" max="23" placeholder="e.g. 14" /></div>
+    </div>
+
+    <!-- METAR -->
+    <h3 style="font-size:0.88rem; color:#7dd3fc; margin:1.2rem 0 0.8rem;">METAR Weather</h3>
+    <div class="form-grid">
+      <div class="field"><label for="wind_speed_knts">Wind Speed (kt)</label><input id="wind_speed_knts" type="number" step="0.1" placeholder="e.g. 12" /></div>
+      <div class="field"><label for="wind_dir_deg">Wind Direction (°)</label><input id="wind_dir_deg" type="number" placeholder="e.g. 270" /></div>
+      <div class="field"><label for="wind_gust_knts">Wind Gust (kt)</label><input id="wind_gust_knts" type="number" step="0.1" placeholder="e.g. 18" /></div>
+      <div class="field"><label for="visibility_m">Visibility (m)</label><input id="visibility_m" type="number" placeholder="e.g. 8000" /></div>
+      <div class="field"><label for="temperature_deg">Temperature (°C)</label><input id="temperature_deg" type="number" step="0.1" placeholder="e.g. 15" /></div>
+      <div class="field"><label for="press_sea_level_p">Sea-Level Pressure (hPa)</label><input id="press_sea_level_p" type="number" step="0.1" placeholder="e.g. 1013" /></div>
+      <div class="field"><label for="press_p">Station Pressure (hPa)</label><input id="press_p" type="number" step="0.1" placeholder="e.g. 1010" /></div>
+      <div class="field"><label for="weather_intensity">Weather Intensity</label><input id="weather_intensity" placeholder="e.g. TS, -RA" /></div>
+      <div class="field"><label for="weather_precipitation">Precipitation</label><input id="weather_precipitation" placeholder="e.g. RA, SN" /></div>
+      <div class="field"><label for="weather_desc">Weather Descriptor</label><input id="weather_desc" placeholder="e.g. BL, FZ" /></div>
+      <div class="field"><label for="weather_obscuration">Obscuration</label><input id="weather_obscuration" placeholder="e.g. FG, BR" /></div>
+      <div class="field"><label for="weather_other">Other Code</label><input id="weather_other" placeholder="e.g. SQ" /></div>
+    </div>
+
+    <div class="btn-row">
+      <button id="btn-predict">&#8811; Predict</button>
+      <button id="btn-sample">Fill Sample Input</button>
+      <button id="btn-clear">Clear</button>
+    </div>
+
+    <div id="spinner">Classifying&hellip;</div>
+    <div id="error-box"></div>
+  </div>
+
+  <!-- Result panel -->
+  <div class="card" id="result-panel">
+    <h2>Prediction Result</h2>
+    <div id="result-label" class="result-label">—</div>
+
+    <div class="prob-row">
+      <span id="prob-ga-text">Go-Around: —</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill-ga" id="bar-ga" style="width:0%"></div></div>
+
+    <div class="prob-row">
+      <span id="prob-nl-text">Normal Landing: —</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill-nl" id="bar-nl" style="width:0%"></div></div>
+
+    <div class="meta" id="result-meta"></div>
+  </div>
+
+  <p class="disclaimer">
+    This demo is for academic pattern recognition purposes only and must not be used for operational aviation decision making.<br/>
+    BBL514E Term Project &mdash; Go-Around Classification Using ADS-B and METAR Data
+  </p>
+
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

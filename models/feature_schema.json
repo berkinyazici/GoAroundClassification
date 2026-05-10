@@ -1,0 +1,36 @@
+{
+  "numeric_features": [
+    "glide_slope_angle",
+    "rwy_length",
+    "month",
+    "day_of_week",
+    "hour_utc",
+    "wind_speed_knts",
+    "wind_dir_deg",
+    "wind_gust_knts",
+    "visibility_m",
+    "temperature_deg",
+    "press_sea_level_p",
+    "press_p"
+  ],
+  "categorical_features": [
+    "airport",
+    "runway",
+    "typecode",
+    "icaoaircrafttype",
+    "wtc",
+    "has_intersection",
+    "airport_country",
+    "airport_region",
+    "operator_country",
+    "operator_region",
+    "weather_intensity",
+    "weather_precipitation",
+    "weather_desc",
+    "weather_obscuration",
+    "weather_other"
+  ],
+  "feature_set": "context_metar",
+  "best_threshold": 0.13059690271365693,
+  "model_name": "mlp"
+}

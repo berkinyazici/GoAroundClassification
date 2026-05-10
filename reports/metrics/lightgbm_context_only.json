@@ -1,0 +1,39 @@
+{
+  "model": "lightgbm",
+  "feature_set": "context_only",
+  "best_threshold": 0.7959860919018692,
+  "validation_accuracy": 0.757234,
+  "validation_precision": 0.005676,
+  "validation_recall": 0.419039,
+  "validation_f1": 0.011201,
+  "validation_roc_auc": 0.624956,
+  "validation_average_precision": 0.012665,
+  "validation_confusion_matrix": [
+    [
+      1246202,
+      397110
+    ],
+    [
+      3143,
+      2267
+    ]
+  ],
+  "validation_threshold": 0.5,
+  "test_accuracy": 0.995868,
+  "test_precision": 0.086098,
+  "test_recall": 0.018855,
+  "test_f1": 0.030935,
+  "test_roc_auc": 0.573106,
+  "test_average_precision": 0.009666,
+  "test_confusion_matrix": [
+    [
+      1645725,
+      1157
+    ],
+    [
+      5672,
+      109
+    ]
+  ],
+  "test_threshold": 0.7959860919018692
+}
