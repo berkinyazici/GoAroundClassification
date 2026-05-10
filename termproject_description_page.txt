@@ -1,0 +1,19 @@
+Project Reports
+Teslim Başlangıcı
+01 Nisan 2026 00:00
+Teslim Bitişi
+10 Mayıs 2026 23:30
+Ödevi Yükle
+Ödev Açıklaması
+Import your Project Reports in required format
+
+ 
+
+Kaynak Dosyalar
+Dosyalar	Boyut	Tarih
+ BBL514E TermProject Guideline.pdf	3 MB	01 Nisan 2026 11:25
+
+İstenen Dosyalar
+Açıklama	Uzantılar
+Project Report
+*.pdf;*.doc;*.docx;
