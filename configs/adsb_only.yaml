@@ -1,0 +1,17 @@
+model: logreg
+target: go_around
+split_mode: airport
+seed: 42
+group_col: airport
+features:
+  - altitude
+  - vertical_rate
+  - ground_speed
+  - heading_change
+  - distance_to_threshold
+  - runway_alignment
+  - approach_roll_mean_altitude
+  - approach_roll_mean_speed
+  - airport
+  - runway
+  - go_around

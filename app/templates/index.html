@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go-Around Classification</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Go-Around Classification</h1>
+
+        <div class="model-selector">
+            <label for="model-select">Model Seç:</label>
+            <select id="model-select" onchange="updateMetrics()">
+                <option value="">Yükleniyor...</option>
+            </select>
+        </div>
+
+        <div class="metrics-display">
+            <h2>Model Metrikleri</h2>
+            <div id="metrics-container" class="metrics-grid">
+                <p>Model seçin...</p>
+            </div>
+        </div>
+
+        <div class="comparison">
+            <h2>Tüm Modeller Karşılaştırması</h2>
+            <div id="comparison-table"></div>
+        </div>
+
+        <div class="prediction">
+            <h2>Tahmin Yap</h2>
+            <form id="prediction-form">
+                <label for="features-json">Özellikler</label>
+                <textarea id="features-json" name="features-json" rows="8"></textarea>
+                <button type="submit">Tahmin Et</button>
+            </form>
+            <div id="prediction-result"></div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
