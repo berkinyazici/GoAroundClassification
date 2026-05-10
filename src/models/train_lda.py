@@ -2,7 +2,9 @@ from pathlib import Path
 
 from joblib import dump
 from sklearn.metrics import accuracy_score
+from sklearn.pipeline import Pipeline
 from src.config import MODEL_DIR, MODEL_PATH, PROCESSED_DIR
+from src.features.build_features import build_features
 from src.models.common import get_classifier
 import pandas as pd
 
@@ -13,17 +15,17 @@ def train_lda(target: str = "target") -> Path:
         raise FileNotFoundError("Train split not found. Run src.data.make_splits first.")
 
     df = pd.read_parquet(train_path)
-    X = df.drop(columns=[target])
-    y = df[target]
+    X, y, feature_pipeline = build_features(df, target)
     model = get_classifier("lda")
     print("Training LDA...")
     model.fit(X, y)
     y_pred = model.predict(X)
     acc = accuracy_score(y, y_pred)
     print(f"Train accuracy: {acc:.4f}")
-    output_path = MODEL_PATH.with_name("lda.joblib")
+    full_pipeline = Pipeline([("features", feature_pipeline), ("model", model)])
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    dump(model, output_path)
+    output_path = MODEL_PATH.with_name("lda.joblib")
+    dump(full_pipeline, output_path)
     return output_path
 
 

@@ -2,9 +2,11 @@ from pathlib import Path
 
 from joblib import dump
 from sklearn.metrics import roc_auc_score
+from sklearn.pipeline import Pipeline
 import pandas as pd
 
 from src.config import MODEL_DIR, MODEL_PATH, PROCESSED_DIR
+from src.features.build_features import build_features, resolve_target_column
 from src.models.common import get_model_registry
 
 
@@ -16,23 +18,27 @@ def select_best_model(target: str = "target") -> Path:
 
     train = pd.read_parquet(train_path)
     test = pd.read_parquet(test_path)
-    X_train, y_train = train.drop(columns=[target]), train[target]
-    X_test, y_test = test.drop(columns=[target]), test[target]
+    target = resolve_target_column(train, target)
 
     best_score = -1.0
     best_model = None
     best_name = None
 
     for name, model in get_model_registry().items():
+        X_train, y_train, feature_pipeline = build_features(train, target)
+        y_test = test[target]
         model.fit(X_train, y_train)
-        if hasattr(model, "predict_proba"):
-            score = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+        full_pipeline = Pipeline([("features", feature_pipeline), ("model", model)])
+        X_test = test.drop(columns=[target])
+
+        if hasattr(full_pipeline, "predict_proba"):
+            score = roc_auc_score(y_test, full_pipeline.predict_proba(X_test)[:, 1])
         else:
-            score = roc_auc_score(y_test, model.predict(X_test))
+            score = roc_auc_score(y_test, full_pipeline.predict(X_test))
 
         if score > best_score:
             best_score = score
-            best_model = model
+            best_model = full_pipeline
             best_name = name
 
     if best_model is None or best_name is None:

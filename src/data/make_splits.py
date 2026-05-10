@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from src.config import INTERIM_DIR, PROCESSED_DIR
+from src.features.build_features import resolve_target_column
 
 
 def make_splits(target: str = "target", test_size: float = 0.2, random_state: int = 42) -> tuple[Path, Path]:
@@ -17,13 +18,12 @@ def make_splits(target: str = "target", test_size: float = 0.2, random_state: in
     dataset = pd.read_csv(source_path, low_memory=False)
     print(f"Loaded interim dataset with shape {dataset.shape}")
 
+    target = resolve_target_column(dataset, target)
+
     if target == 'has_ga':
         dataset[target] = dataset[target].replace(
             {True: 1, False: 0, 'True': 1, 'False': 0, 'true': 1, 'false': 0}
         )
-    if target not in dataset.columns:
-        print(f"Available columns: {list(dataset.columns)}")
-        raise ValueError(f"Target column '{target}' not found in interim data.")
 
     dataset[target] = pd.to_numeric(dataset[target], errors="coerce")
     missing_targets = dataset[target].isna().sum()
