@@ -36,7 +36,7 @@ def _generate_optional_files() -> None:
             )
         else:
             agg = df.select(["airport", "runway"]).unique() if "airport" in df.columns else pl.DataFrame()
-        agg.write_csv(AGG_CSV_GZ)
+        agg.to_pandas().to_csv(AGG_CSV_GZ, index=False, compression="gzip")
         print(f"  Generated {AGG_CSV_GZ.name}")
 
     if not VALIDATION_XLSX.exists():
