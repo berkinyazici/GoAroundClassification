@@ -15,8 +15,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 # --------------------------------------------------------------------------- #
 
 NUMERIC_CONTEXT = [
-    "n_approaches",
-    "n_rwy_approached",
+    # n_approaches and n_rwy_approached are EXCLUDED: they encode the number of
+    # approaches a flight ultimately made, which is post-hoc information that
+    # leaks the target (a go-around adds an extra approach → n_approaches >= 2).
+    # They are used only for filtering calibration flights in clean_data().
     "glide_slope_angle",
     "rwy_length",
     "month",
