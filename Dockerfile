@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir \
 COPY src/ ./src/
 COPY app/ ./app/
 COPY models/ ./models/
+COPY reports/ ./reports/
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
