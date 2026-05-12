@@ -54,6 +54,8 @@ def test_predict_full_input(client):
     assert resp.status_code == 200
     data = resp.json()
     assert abs(data["probability_go_around"] + data["probability_normal_landing"] - 1.0) < 0.01
+    assert "derived_features" in data
+    assert "crosswind_knts" in data["derived_features"]["values"]
 
 
 def test_predict_empty_input(client):
@@ -61,3 +63,47 @@ def test_predict_empty_input(client):
     assert resp.status_code == 200
     data = resp.json()
     assert "predicted_class" in data
+
+
+def test_derived_features_endpoint(client):
+    payload = {
+        "airport": "EDDF",
+        "runway": "25L",
+        "typecode": "A320",
+        "wind_speed_knts": 20.0,
+        "wind_dir_deg": 270.0,
+        "wind_gust_knts": 28.0,
+        "visibility_m": 3000.0,
+    }
+    resp = client.post("/derived-features", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "values" in data
+    assert "metadata" in data
+    assert data["values"]["crosswind_knts"] is not None
+    assert "runway" in data["metadata"]["crosswind_knts"]["depends_on"]
+
+
+def test_feature_importance_endpoint(client):
+    resp = client.get("/feature-importance")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["method"] == "permutation_importance"
+    assert len(data["features"]) > 0
+    assert data["features"][0]["rank"] == 1
+
+
+def test_sensitivity_endpoint(client):
+    payload = {
+        "airport": "EDDF",
+        "runway": "25L",
+        "wind_speed_knts": 20.0,
+        "wind_dir_deg": 270.0,
+        "wind_gust_knts": 28.0,
+        "visibility_m": 3000.0,
+    }
+    resp = client.post("/sensitivity", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert any(item["feature"] == "wind_gust_knts" for item in data["items"])

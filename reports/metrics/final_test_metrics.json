@@ -1,22 +1,22 @@
 {
-  "test_accuracy": 0.993105,
-  "test_precision": 0.041789,
-  "test_recall": 0.044283,
-  "test_f1": 0.043,
-  "test_roc_auc": 0.684614,
-  "test_average_precision": 0.015975,
+  "test_accuracy": 0.972937,
+  "test_precision": 0.009068,
+  "test_recall": 0.063604,
+  "test_f1": 0.015873,
+  "test_roc_auc": 0.58311,
+  "test_average_precision": 0.005798,
   "test_confusion_matrix": [
     [
-      1641012,
-      5870
+      80224,
+      1967
     ],
     [
-      5525,
-      256
+      265,
+      18
     ]
   ],
-  "test_threshold": 0.13059690271365693,
+  "test_threshold": 0.21162981151588608,
   "model_name": "mlp",
   "feature_set": "context_metar",
-  "threshold": 0.13059690271365693
+  "threshold": 0.21162981151588608
 }

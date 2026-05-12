@@ -24,12 +24,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.config import TRAIN_PARQUET, VALID_PARQUET, TEST_PARQUET
 from src.features.build_features import load_data, build_feature_matrix
 
+RISK_ENCODING_COLUMNS = {
+    "airport": "airport_risk_train",
+    "runway": "runway_risk_train",
+    "typecode": "typecode_risk_train",
+}
+
 
 # --------------------------------------------------------------------------- #
 # Data loading                                                                 #
 # --------------------------------------------------------------------------- #
 
-def load_splits(feature_set: str = "context_metar", sample_frac: float | None = None) -> tuple:
+def load_splits(
+    feature_set: str = "context_metar",
+    sample_frac: float | None = None,
+    negative_ratio: float | None = 10.0,
+) -> tuple:
     """Return (X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats)."""
     print(f"  Loading splits (feature_set={feature_set}) ...")
     t0 = time.time()
@@ -46,6 +56,17 @@ def load_splits(feature_set: str = "context_metar", sample_frac: float | None = 
         )
         train = pd.concat([pos_tr, neg_tr]).sample(frac=1, random_state=42)
         print(f"  Train sampled: {len(train):,} rows ({int(train['target'].sum())} go-arounds)")
+    elif negative_ratio is not None:
+        pos_tr = train[train["target"] == 1]
+        neg_tr = train[train["target"] == 0]
+        max_negatives = int(len(pos_tr) * negative_ratio)
+        if len(pos_tr) > 0 and len(neg_tr) > max_negatives:
+            neg_tr = neg_tr.sample(n=max_negatives, random_state=42)
+            train = pd.concat([pos_tr, neg_tr]).sample(frac=1, random_state=42)
+            print(
+                f"  Train downsampled: {len(train):,} rows "
+                f"({len(pos_tr):,} go-arounds, negative_ratio={negative_ratio:g}:1)"
+            )
 
     print(f"  Train: {len(train):,}  Valid: {len(valid):,}  Test: {len(test):,}")
 
@@ -53,8 +74,53 @@ def load_splits(feature_set: str = "context_metar", sample_frac: float | None = 
     X_va, y_va, _,         _         = build_feature_matrix(valid, feature_set)
     X_te, y_te, _,         _         = build_feature_matrix(test,  feature_set)
 
+    if feature_set == "context_metar_engineered":
+        risk_schema = fit_risk_encoders(X_tr, y_tr)
+        X_tr = apply_risk_encoders(X_tr, risk_schema)
+        X_va = apply_risk_encoders(X_va, risk_schema)
+        X_te = apply_risk_encoders(X_te, risk_schema)
+        X_tr.attrs["risk_schema"] = risk_schema
+
     print(f"  Features: {len(num_feats)} numeric + {len(cat_feats)} categorical  [{time.time()-t0:.1f}s]")
     return X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats
+
+
+def fit_risk_encoders(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    min_samples: int = 100,
+) -> dict[str, Any]:
+    global_rate = float(y_train.mean())
+    schema: dict[str, Any] = {"global_rate": global_rate, "columns": {}}
+    train_with_target = X_train.copy()
+    train_with_target["_target"] = y_train.values
+
+    for source_col, feature_col in RISK_ENCODING_COLUMNS.items():
+        if source_col not in train_with_target.columns:
+            continue
+        stats = train_with_target.groupby(source_col)["_target"].agg(["sum", "count"])
+        smoothed = (stats["sum"] + global_rate * min_samples) / (stats["count"] + min_samples)
+        schema["columns"][source_col] = {
+            "feature": feature_col,
+            "mapping": {str(key): float(value) for key, value in smoothed.items()},
+        }
+    return schema
+
+
+def apply_risk_encoders(X: pd.DataFrame, risk_schema: dict[str, Any] | None) -> pd.DataFrame:
+    X = X.copy()
+    if not risk_schema:
+        return X
+
+    global_rate = float(risk_schema.get("global_rate", 0.0))
+    for source_col, config in risk_schema.get("columns", {}).items():
+        feature_col = config["feature"]
+        mapping = config.get("mapping", {})
+        if source_col in X.columns:
+            X[feature_col] = X[source_col].astype(str).map(mapping).fillna(global_rate).astype("float32")
+        else:
+            X[feature_col] = global_rate
+    return X
 
 
 # --------------------------------------------------------------------------- #
@@ -115,10 +181,28 @@ def evaluate_binary_classifier(
 
 
 def tune_threshold_for_f1(y_true: np.ndarray, y_prob: np.ndarray) -> float:
+    return tune_threshold_for_fbeta(y_true, y_prob, beta=1.0)
+
+
+def tune_threshold_for_fbeta(
+    y_true: np.ndarray,
+    y_prob: np.ndarray,
+    beta: float = 2.0,
+    min_recall: float | None = None,
+) -> float:
     precisions, recalls, thresholds = precision_recall_curve(y_true, y_prob)
-    denom = precisions[:-1] + recalls[:-1]
-    f1s = np.where(denom > 0, 2 * precisions[:-1] * recalls[:-1] / np.maximum(denom, 1e-9), 0.0)
-    best_idx = int(np.argmax(f1s))
+    precision_values = precisions[:-1]
+    recall_values = recalls[:-1]
+    beta_squared = beta**2
+    denom = (beta_squared * precision_values) + recall_values
+    scores = np.where(
+        denom > 0,
+        (1 + beta_squared) * precision_values * recall_values / np.maximum(denom, 1e-9),
+        0.0,
+    )
+    if min_recall is not None:
+        scores = np.where(recall_values >= min_recall, scores, -1.0)
+    best_idx = int(np.argmax(scores))
     return float(thresholds[best_idx])
 
 

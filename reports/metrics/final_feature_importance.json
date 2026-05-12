@@ -1,0 +1,228 @@
+{
+  "model_name": "mlp",
+  "feature_set": "context_metar",
+  "metric": "average_precision",
+  "method": "permutation_importance",
+  "sample_rows": 10283,
+  "positive_rows": 283,
+  "baseline_average_precision": 0.04426243302603275,
+  "baseline_roc_auc": 0.5880328621908127,
+  "features": [
+    {
+      "feature": "wind_gust_knts",
+      "importance": 0.00313792228581757,
+      "raw_drop_average_precision": 0.00313792228581757,
+      "kind": "numeric",
+      "rank": 1,
+      "normalized_importance": 1.0
+    },
+    {
+      "feature": "weather_desc",
+      "importance": 0.002651610245921261,
+      "raw_drop_average_precision": 0.002651610245921261,
+      "kind": "categorical",
+      "rank": 2,
+      "normalized_importance": 0.8450210057482024
+    },
+    {
+      "feature": "weather_other",
+      "importance": 0.0019597987656135066,
+      "raw_drop_average_precision": 0.0019597987656135066,
+      "kind": "categorical",
+      "rank": 3,
+      "normalized_importance": 0.6245529962520696
+    },
+    {
+      "feature": "weather_precipitation",
+      "importance": 0.0017409995678766877,
+      "raw_drop_average_precision": 0.0017409995678766877,
+      "kind": "categorical",
+      "rank": 4,
+      "normalized_importance": 0.5548255849883417
+    },
+    {
+      "feature": "operator_region",
+      "importance": 0.0016981689052750655,
+      "raw_drop_average_precision": 0.0016981689052750655,
+      "kind": "categorical",
+      "rank": 5,
+      "normalized_importance": 0.5411762148955247
+    },
+    {
+      "feature": "wind_speed_knts",
+      "importance": 0.0012302192032800988,
+      "raw_drop_average_precision": 0.0012302192032800988,
+      "kind": "numeric",
+      "rank": 6,
+      "normalized_importance": 0.3920489710150904
+    },
+    {
+      "feature": "weather_intensity",
+      "importance": 0.000606285979211763,
+      "raw_drop_average_precision": 0.000606285979211763,
+      "kind": "categorical",
+      "rank": 7,
+      "normalized_importance": 0.19321255403678622
+    },
+    {
+      "feature": "icaoaircrafttype",
+      "importance": 0.0005162229141019136,
+      "raw_drop_average_precision": 0.0005162229141019136,
+      "kind": "categorical",
+      "rank": 8,
+      "normalized_importance": 0.16451105766228824
+    },
+    {
+      "feature": "rwy_length",
+      "importance": 0.00026196149213165987,
+      "raw_drop_average_precision": 0.00026196149213165987,
+      "kind": "numeric",
+      "rank": 9,
+      "normalized_importance": 0.08348246650837853
+    },
+    {
+      "feature": "press_p",
+      "importance": 0.0001799993573903813,
+      "raw_drop_average_precision": 0.0001799993573903813,
+      "kind": "numeric",
+      "rank": 10,
+      "normalized_importance": 0.057362592503938756
+    },
+    {
+      "feature": "temperature_deg",
+      "importance": 0.00016107347883860998,
+      "raw_drop_average_precision": 0.00016107347883860998,
+      "kind": "numeric",
+      "rank": 11,
+      "normalized_importance": 0.05133125175426168
+    },
+    {
+      "feature": "wind_dir_deg",
+      "importance": 0.00012159421530684907,
+      "raw_drop_average_precision": 0.00012159421530684907,
+      "kind": "numeric",
+      "rank": 12,
+      "normalized_importance": 0.038749912914165206
+    },
+    {
+      "feature": "typecode",
+      "importance": 1.8650677902761387e-05,
+      "raw_drop_average_precision": 1.8650677902761387e-05,
+      "kind": "categorical",
+      "rank": 13,
+      "normalized_importance": 0.005943639199433534
+    },
+    {
+      "feature": "glide_slope_angle",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0005528725344245445,
+      "kind": "numeric",
+      "rank": 14,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "month",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0005736069833124519,
+      "kind": "numeric",
+      "rank": 15,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "day_of_week",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0015519864390105785,
+      "kind": "numeric",
+      "rank": 16,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "hour_utc",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0009706324717884129,
+      "kind": "numeric",
+      "rank": 17,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "visibility_m",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.00013647844019352984,
+      "kind": "numeric",
+      "rank": 18,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "press_sea_level_p",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0006035869517097304,
+      "kind": "numeric",
+      "rank": 19,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "airport",
+      "importance": 0.0,
+      "raw_drop_average_precision": -3.88114001610429e-05,
+      "kind": "categorical",
+      "rank": 20,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "runway",
+      "importance": 0.0,
+      "raw_drop_average_precision": 0.0,
+      "kind": "categorical",
+      "rank": 21,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "wtc",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0005550487838115667,
+      "kind": "categorical",
+      "rank": 22,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "has_intersection",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.00024408748724274315,
+      "kind": "categorical",
+      "rank": 23,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "airport_country",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0004908680704935724,
+      "kind": "categorical",
+      "rank": 24,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "airport_region",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0006170678357359793,
+      "kind": "categorical",
+      "rank": 25,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "operator_country",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0018672365386306275,
+      "kind": "categorical",
+      "rank": 26,
+      "normalized_importance": 0.0
+    },
+    {
+      "feature": "weather_obscuration",
+      "importance": 0.0,
+      "raw_drop_average_precision": -0.0003701322837509231,
+      "kind": "categorical",
+      "rank": 27,
+      "normalized_importance": 0.0
+    }
+  ]
+}

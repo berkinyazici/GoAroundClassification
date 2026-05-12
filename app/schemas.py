@@ -1,6 +1,6 @@
 """Pydantic request/response schemas."""
 from __future__ import annotations
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 
@@ -51,3 +51,4 @@ class PredictResponse(BaseModel):
     probability_go_around:   float
     probability_normal_landing: float
     threshold:               float
+    derived_features:         Optional[dict[str, Any]] = None

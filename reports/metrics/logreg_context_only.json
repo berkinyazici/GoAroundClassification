@@ -1,39 +1,41 @@
 {
   "model": "logreg",
   "feature_set": "context_only",
-  "best_threshold": 0.8025681789777412,
-  "validation_accuracy": 0.654144,
-  "validation_precision": 0.004851,
-  "validation_recall": 0.51146,
-  "validation_f1": 0.009612,
-  "validation_roc_auc": 0.624229,
-  "validation_average_precision": 0.007194,
+  "best_threshold": 0.6109184101986446,
+  "threshold_metric": "f2",
+  "negative_ratio": 10.0,
+  "validation_accuracy": 0.560642,
+  "validation_precision": 0.004109,
+  "validation_recall": 0.532143,
+  "validation_f1": 0.008156,
+  "validation_roc_auc": 0.555717,
+  "validation_average_precision": 0.004388,
   "validation_confusion_matrix": [
     [
-      1075735,
-      567577
+      46095,
+      36109
     ],
     [
-      2643,
-      2767
+      131,
+      149
     ]
   ],
   "validation_threshold": 0.5,
-  "test_accuracy": 0.994527,
-  "test_precision": 0.033181,
-  "test_recall": 0.020066,
-  "test_f1": 0.025008,
-  "test_roc_auc": 0.629307,
-  "test_average_precision": 0.007015,
+  "test_accuracy": 0.980539,
+  "test_precision": 0.008185,
+  "test_recall": 0.038869,
+  "test_f1": 0.013522,
+  "test_roc_auc": 0.563339,
+  "test_average_precision": 0.004785,
   "test_confusion_matrix": [
     [
-      1643502,
-      3380
+      80858,
+      1333
     ],
     [
-      5665,
-      116
+      272,
+      11
     ]
   ],
-  "test_threshold": 0.8025681789777412
+  "test_threshold": 0.6109184101986446
 }

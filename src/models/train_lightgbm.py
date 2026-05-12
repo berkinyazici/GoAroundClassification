@@ -15,10 +15,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.config import MODELS_DIR, METRICS_DIR, FIGURES_DIR
 from src.models.common import (
     create_preprocessor, evaluate_binary_classifier,
-    load_splits, save_metrics, save_model_bundle, tune_threshold_for_f1,
+    load_splits, save_metrics, save_model_bundle, tune_threshold_for_fbeta,
 )
 
-FEATURE_SETS = ["context_only", "context_metar"]
+FEATURE_SETS = ["context_only", "context_metar", "context_metar_engineered"]
 
 
 class LGBMSklearnWrapper(BaseEstimator, ClassifierMixin):
@@ -69,9 +69,15 @@ class LGBMSklearnWrapper(BaseEstimator, ClassifierMixin):
         return (self.predict_proba(X)[:, 1] >= 0.5).astype(int)
 
 
-def train_lightgbm(feature_set: str = "context_metar", sample_frac: float | None = None) -> dict:
+def train_lightgbm(
+    feature_set: str = "context_metar",
+    sample_frac: float | None = None,
+    negative_ratio: float | None = 10.0,
+) -> dict:
     print(f"\n=== LightGBM [{feature_set}] ===")
-    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(feature_set, sample_frac)
+    X_tr, y_tr, X_va, y_va, X_te, y_te, num_feats, cat_feats = load_splits(
+        feature_set, sample_frac, negative_ratio
+    )
 
     preprocessor = create_preprocessor(num_feats, cat_feats)
 
@@ -93,15 +99,21 @@ def train_lightgbm(feature_set: str = "context_metar", sample_frac: float | None
     print("  Predicting ...")
     va_prob = clf.predict_proba(X_va_pre)[:, 1]
     te_prob = clf.predict_proba(X_te_pre)[:, 1]
-    best_thresh = tune_threshold_for_f1(y_va.values, va_prob)
+    best_thresh = tune_threshold_for_fbeta(y_va.values, va_prob, beta=2.0)
 
-    metrics = {"model": "lightgbm", "feature_set": feature_set, "best_threshold": best_thresh}
+    metrics = {
+        "model": "lightgbm",
+        "feature_set": feature_set,
+        "best_threshold": best_thresh,
+        "threshold_metric": "f2",
+        "negative_ratio": negative_ratio,
+    }
     metrics.update(evaluate_binary_classifier(y_va.values, va_prob, threshold=0.5,         split_name="validation"))
     metrics.update(evaluate_binary_classifier(y_te.values, te_prob, threshold=best_thresh, split_name="test"))
 
     key = f"lightgbm_{feature_set}"
     save_metrics(metrics, METRICS_DIR / f"{key}.json")
-    schema = {"numeric_features": num_feats, "categorical_features": cat_feats, "feature_set": feature_set}
+    schema = {"numeric_features": num_feats, "categorical_features": cat_feats, "feature_set": feature_set, "risk_schema": X_tr.attrs.get("risk_schema", {})}
     save_model_bundle(clf, preprocessor, schema, MODELS_DIR / f"{key}.joblib")
 
     # Feature importance
@@ -131,9 +143,10 @@ def train_lightgbm(feature_set: str = "context_metar", sample_frac: float | None
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sample-frac", type=float, default=None)
+    parser.add_argument("--negative-ratio", type=float, default=10.0)
     args = parser.parse_args()
     for fs in FEATURE_SETS:
-        train_lightgbm(fs, args.sample_frac)
+        train_lightgbm(fs, args.sample_frac, args.negative_ratio)
 
 
 if __name__ == "__main__":

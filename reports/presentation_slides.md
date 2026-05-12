@@ -4,350 +4,325 @@
 
 ---
 
-## SLIDE 1 — Title Slide
+## SLIDE 1 — Title
 **[~15 seconds]**
 
 **Title:** Go-Around Classification Using ADS-B and METAR Data
 
-**Subtitle:** BBL514E Pattern Recognition — Term Project
+**Subtitle:** Rare-event classification with engineered aviation/weather features
 
-**Authors:** Furkan Güney (704241023) · Alper Berkin Yazıcı (704241020)
-
-**Visual:** photo of an aircraft performing a go-around (nose up, gear still down over runway)
-or a clean aviation-themed background
+**Authors:** Furkan Güney · Alper Berkin Yazıcı
 
 **What to say:**
-> "Good [morning/afternoon]. Our project is about predicting go-arounds — aborted landing
-> attempts — using open aviation and weather data. I'm [name], and this is [partner name]."
+> "Our project predicts go-around risk from public ADS-B-derived landing data and METAR weather observations. The main challenge is that go-arounds are extremely rare."
 
 ---
 
 ## SLIDE 2 — What is a Go-Around?
+**[~35 seconds]**
+
+**Bullets:**
+- Aborted landing followed by climb-out and another approach
+- Safety-preserving, but increases pilot/controller workload
+- Disrupts arrival sequence and runway efficiency
+- Rare event: current split has about **0.34-0.35 % positives**
+
+**Key message:**
+> This is a rare-event detection problem, not a standard balanced classifier.
+
+**What to say:**
+> "Accuracy is not enough here. A classifier that always predicts normal landing can already exceed 99 percent accuracy, so we focus on precision-recall behavior."
+
+---
+
+## SLIDE 3 — Dataset and Split
 **[~45 seconds]**
 
-**Title:** What is a Go-Around?
+**Source:** Large Landing Trajectory Dataset for Go-Around Analysis
 
-**Left side — image:** diagram showing approach path vs. go-around climb path
+**Available data:**
+- ADS-B-derived landing context: airport, runway, aircraft type, glide slope, runway length, time
+- METAR weather: wind, gust, visibility, temperature, pressure, weather codes
+- Label: go-around vs normal landing
 
-**Right side — bullet points:**
-- Pilot aborts landing on final approach
-- Climbs away and re-attempts
-- **Safety-preserving** — but increases workload
-- Rate: typically **0.1 – 2 %** of landings
-- Our dataset: **≈ 0.37 %** → severe class imbalance
+**Current processed temporal split:**
 
-**Key message box:**
-> Can we predict go-around risk from public data *before* touchdown?
+| Split | Rows | Go-arounds | Positive rate |
+|---|---:|---:|---:|
+| Train | 283,355 | 993 | 0.350 % |
+| Validation | 82,484 | 280 | 0.339 % |
+| Test | 82,474 | 283 | 0.343 % |
 
 **What to say:**
-> "A go-around is when a pilot decides the landing isn't safe and climbs away to try again.
-> It's the correct thing to do, but it disrupts traffic and increases controller workload.
-> The challenge is they're very rare — under 0.4% of all landings — which makes this
-> a difficult imbalanced classification problem."
+> "The full source dataset has around 9 million landings, but our reproducible experiment uses this temporal working split. We keep validation and test untouched and tune only on validation."
 
 ---
 
-## SLIDE 3 — Dataset
-**[~45 seconds]**
+## SLIDE 4 — Leakage Control
+**[~35 seconds]**
 
-**Title:** Dataset
-
-**Large statistics (icons + numbers):**
-| Icon | Stat |
-|---|---|
-| ✈️ | ~9 million landings |
-| 🔴 | ~33,000 go-arounds (0.37 %) |
-| 🏢 | 176 airports |
-| 🌍 | 44 countries |
-| 📅 | Full year 2019 |
-
-**Source box:**
-> Monstein et al. (2022) — Zenodo record 7148117
-> `go_arounds_augmented.csv.gz`
-
-**Temporal split diagram (3 boxes):**
-```
-Jan–Aug 2019          Sep–Oct 2019       Nov–Dec 2019
-  TRAINING              VALIDATION           TEST
-  5.66M rows             1.65M rows         1.65M rows
+**Removed from model inputs:**
+```text
+n_approaches
+n_rwy_approached
+icao24
+callsign
+registration
+raw time
+target / has_ga
 ```
 
+**Why?**
+- `n_approaches` is post-hoc: a go-around creates another approach
+- aircraft IDs/callsigns can create memorization
+- raw label fields directly leak the answer
+
 **What to say:**
-> "We used a large public dataset from Zenodo covering all 2019 landings at 176 airports.
-> We split it strictly by time — train on January through August, validate on September-October,
-> test on November-December. This prevents any future data leaking into training."
+> "Earlier perfect-looking metrics were suspicious. The biggest issue was post-hoc information such as number of approaches. We removed these to make the evaluation honest."
 
 ---
 
-## SLIDE 4 — Feature Engineering
-**[~40 seconds]**
-
-**Title:** Feature Engineering — Two Feature Sets
-
-**Two columns:**
-
-**Context Only (15 features)**
-- Airport, runway, aircraft type
-- Wake turbulence category
-- Glide slope angle, runway length
-- Month, day of week, hour (UTC)
-
-**Context + METAR (27 features)**
-= Context + Weather:
-- Wind speed, direction, gusts
-- Visibility, temperature, pressure
-- Weather codes (fog, rain, snow...)
-
-**Bottom callout (red warning box):**
-⚠️ **Leakage removed:** `n_approaches` excluded — it counts total approaches per flight,
-which post-hoc reveals the go-around.
-
-**What to say:**
-> "We defined two feature sets to run an ablation study. The context-only set uses
-> airport, aircraft, and time information. The full set adds METAR weather observations.
-> One important step was removing n_approaches from features — it counted how many
-> approaches a flight made total, which directly leaks the answer."
-
----
-
-## SLIDE 5 — Classifiers
-**[~40 seconds]**
-
-**Title:** Five Classifiers Compared
-
-**Grid (2×3, last cell empty):**
-
-| | | |
-|---|---|---|
-| **LDA** | **Logistic Regression** | **Random Forest** |
-| Generative linear | Discriminative linear | 100-tree ensemble |
-| Gaussian assumption | Weighted cross-entropy | Bootstrap + random split |
-| **MLP** | **LightGBM** | |
-| 64→32 hidden units | Gradient boosting | |
-| ReLU + early stop | Histogram-based | |
-
-**Bottom bar:**
-All models: class-weighted training · threshold tuned on validation set for max F1
-
-**What to say:**
-> "We compared five classifiers — from the classical LDA baseline to neural and boosting models.
-> All were trained with class weighting to handle the imbalance. After training, we tuned
-> the decision threshold on the validation set to maximize F1 rather than using the default 0.5."
-
----
-
-## SLIDE 6 — Results Table
+## SLIDE 5 — Feature Sets
 **[~50 seconds]**
 
-**Title:** Results — Test Set Performance
+**1. Context Only**
+- airport/runway/aircraft/time
+- glide slope angle and runway length
 
-**Table (highlight MLP row in green):**
+**2. Context + METAR**
+- context features
+- wind, gust, visibility, pressure, temperature, weather codes
 
-| Model | Feature Set | ROC-AUC | PR-AUC | F1 |
-|---|---|---|---|---|
-| **🏆 MLP** | **context+METAR** | **0.685** | **0.0160** | **0.043** |
-| LightGBM | context+METAR | 0.679 | 0.0134 | 0.030 |
-| Random Forest | context+METAR | 0.690 | 0.0115 | 0.037 |
-| Logistic Reg. | context+METAR | 0.691 | 0.0102 | 0.033 |
-| LDA | context+METAR | 0.681 | 0.0100 | 0.034 |
-| MLP | context only | 0.609 | 0.0123 | 0.037 |
-| ... | context only | ~0.63 | ~0.008 | ~0.025 |
-
-**Side callout box:**
-> No-skill baseline PR-AUC ≈ 0.0035
-> Best model: **4.6× above baseline**
+**3. Context + METAR + Engineered**
+- runway-relative wind:
+  - headwind
+  - tailwind
+  - crosswind
+- weather severity:
+  - gust spread
+  - low visibility flags
+  - strong wind/crosswind flags
+  - adverse weather flag
+- train-only risk encodings:
+  - airport risk
+  - runway risk
+  - aircraft type risk
 
 **What to say:**
-> "Here are the test set results. We rank by PR-AUC because it's the right metric for rare events —
-> ROC-AUC can look good even on imbalanced problems. The MLP with full weather features
-> came first by PR-AUC at 0.016 — about 4.6 times above the no-skill baseline."
+> "The engineered set uses only existing columns. No new dataset was needed. For risk encodings, we calculate rates only from the training split to avoid leakage."
 
 ---
 
-## SLIDE 7 — Key Insight: Weather Matters
-**[~30 seconds]**
+## SLIDE 6 — Imbalance Handling
+**[~40 seconds]**
 
-**Title:** Key Finding — METAR Weather Features Consistently Help
+**Problem:** positive rate is only ~0.34 %
 
-**Bar chart (or table with arrows):**
-
-| Model | Context Only PR-AUC | + METAR PR-AUC | Gain |
-|---|---|---|---|
-| MLP | 0.0123 | 0.0160 | **+30 %** |
-| LightGBM | 0.0097 | 0.0134 | **+38 %** |
-| Logistic Reg. | 0.0070 | 0.0102 | **+46 %** |
-| LDA | 0.0075 | 0.0100 | **+33 %** |
-
-**Visual:** insert `reports/figures/precision_recall_curve.png` or `roc_curve.png`
+**What we did:**
+- keep all positive samples
+- downsample negatives to **10:1** in training
+- use class weights where supported
+- LightGBM uses `scale_pos_weight`
+- tune threshold on validation using **F2-score**
+- select models primarily by validation **PR-AUC**
 
 **What to say:**
-> "Adding weather features improved every single model by 30 to 46 percent in PR-AUC.
-> This confirms that visibility, wind, and weather codes carry real predictive signal
-> that context features alone cannot capture."
+> "F2 gives recall more weight than precision, which fits a safety-oriented detection problem. But the final model is still selected by PR-AUC because ranking rare positives is the central challenge."
 
 ---
 
-## SLIDE 8 — Confusion Matrix
-**[~30 seconds]**
+## SLIDE 7 — Model Comparison
+**[~60 seconds]**
 
-**Title:** Best Model — Confusion Matrix (MLP, context+METAR)
+**Latest results, ordered by validation PR-AUC:**
 
-**Insert:** `reports/figures/confusion_matrix.png`
-
-**Below the figure:**
-| | |
-|---|---|
-| Threshold | τ* = 0.131 (tuned on validation) |
-| True Positives | 256 go-arounds detected |
-| False Negatives | 5,525 go-arounds missed |
-| False Positives | 5,870 false alarms |
-
-**Bottom note:**
-> Precision: 4.2 % · Recall: 4.4 % · Accuracy: 99.3 %
-> (accuracy is misleading — model beats no-skill baseline by 4.6× on PR-AUC)
+| Model | Feature Set | Val PR-AUC | Test ROC-AUC | Test PR-AUC | Test Recall |
+|---|---|---:|---:|---:|---:|
+| **MLP** | **context+METAR** | **0.0098** | 0.583 | 0.0058 | 0.0636 |
+| LightGBM | engineered | 0.0093 | 0.604 | 0.0056 | 0.0565 |
+| LDA | context+METAR | 0.0082 | 0.624 | 0.0064 | 0.0495 |
+| LDA | engineered | 0.0081 | **0.652** | **0.0067** | **0.0954** |
+| Logistic Reg. | context+METAR | 0.0081 | 0.620 | 0.0066 | 0.0848 |
+| Random Forest | engineered | 0.0078 | 0.636 | 0.0063 | 0.0601 |
 
 **What to say:**
-> "The confusion matrix shows the inherent difficulty of the problem. Even the best model
-> detects only about 4% of go-arounds. This is expected — go-arounds share almost identical
-> observable conditions with the vast majority of normal landings."
+> "The best validation PR-AUC is still MLP with context plus METAR. Engineered features improved ROC-AUC for several models, especially LDA and Logistic Regression, but did not fully solve the rare-event separation problem."
 
 ---
 
-## SLIDE 9 — System Architecture
-**[~30 seconds]**
+## SLIDE 8 — Final Model and Confusion Matrix
+**[~45 seconds]**
 
-**Title:** Deployed System
-
-**Diagram (left to right):**
-```
-[User Browser]
-      │  HTTP POST /predict
-      ▼
-[HTML Interface]  ◄──── Jinja2 template
-      │
-[FastAPI Backend]  (port 8000)
-      │
-[MLP Model]  ◄──── final_model.joblib
-      │
-[Docker Container]  python:3.11-slim
+**Final model:**
+```text
+MLP + context_metar
+threshold = 0.2116
 ```
 
-**Right side bullets:**
-- Single `docker compose up` to run
-- `/predict` — JSON API endpoint
-- `/` — HTML form interface
-- `/health` — health check
+**Test metrics:**
+
+| Metric | Value |
+|---|---:|
+| Accuracy | 0.9729 |
+| Precision | 0.0091 |
+| Recall | 0.0636 |
+| F1 | 0.0159 |
+| ROC-AUC | 0.5831 |
+| PR-AUC | 0.0058 |
+
+**Confusion matrix:**
+
+|  | Pred Normal | Pred Go-Around |
+|---|---:|---:|
+| Actual Normal | 80,224 | 1,967 |
+| Actual Go-Around | 265 | 18 |
 
 **What to say:**
-> "The system runs in a single Docker container. The FastAPI backend loads the trained
-> model at startup and exposes both a JSON API and an HTML interface. Everything runs
-> with one docker compose up command."
+> "The model detects 18 of 283 go-arounds. Precision is low because even a small false-positive rate creates many false alarms when positives are extremely rare."
 
 ---
 
-## SLIDE 10 — Conclusion
-**[~25 seconds]**
+## SLIDE 9 — Feature Importance
+**[~45 seconds]**
 
-**Title:** Conclusion
+**Method:** permutation importance on average precision for the final MLP model
+
+**Top features:**
+
+| Rank | Feature | Relative impact |
+|---:|---|---:|
+| 1 | wind_gust_knts | 1.000 |
+| 2 | weather_desc | 0.845 |
+| 3 | weather_other | 0.625 |
+| 4 | weather_precipitation | 0.555 |
+| 5 | operator_region | 0.541 |
+| 6 | wind_speed_knts | 0.392 |
+| 7 | weather_intensity | 0.193 |
+| 8 | icaoaircrafttype | 0.165 |
+
+**What to say:**
+> "Because MLP has no native tree importance, we use permutation importance. This tells us how much average precision drops when each feature is shuffled."
+
+---
+
+## SLIDE 10 — Explainable Web Interface
+**[~45 seconds]**
+
+**New interface features:**
+- Inputs ordered by final-model feature importance
+- Each input shows rank and relative impact bar
+- Derived features shown read-only
+- Derived feature dependencies are displayed
+- Backend recalculates derived values when connected inputs change
+- Local what-if panel after prediction:
+  - e.g. `wind_gust_knts +5` changes go-around probability by X
+  - `visibility_m -1000` changes probability by Y
+
+**Endpoints:**
+```text
+/predict
+/derived-features
+/feature-importance
+/sensitivity
+```
+
+**What to say:**
+> "The demo is not just a prediction form anymore. It shows which inputs matter globally and how changing current numeric values changes the local probability."
+
+---
+
+## SLIDE 11 — System Architecture
+**[~35 seconds]**
+
+```text
+Browser UI
+   |
+   | /predict, /derived-features, /feature-importance, /sensitivity
+   v
+FastAPI backend
+   |
+   | loads
+   v
+final_model.joblib + feature_schema.json
+   |
+   v
+Prediction + explanation panels
+```
+
+**What to say:**
+> "The backend centralizes all feature engineering. The UI never hand-computes model inputs; it asks the backend, so displayed derived values match prediction-time values."
+
+---
+
+## SLIDE 12 — Conclusion
+**[~35 seconds]**
 
 **Findings:**
-✅ Go-around classification from public ADS-B + METAR data is feasible
-✅ METAR weather features improve all models by 30–46% in PR-AUC
-✅ Best model: MLP + context+METAR → ROC-AUC 0.685, PR-AUC 0.016 (4.6× baseline)
-✅ Temporal train/val/test split → no leakage
-
-**Limitations:**
-- Only landing-level aggregate features (no per-second trajectory data)
-- Low absolute precision/recall due to extreme class imbalance
+- Public ADS-B-derived + METAR data provides weak but measurable signal
+- Accuracy is misleading due to extreme imbalance
+- PR-AUC and confusion matrix are more honest
+- Engineered runway/weather/risk features improve some models, especially ROC-AUC
+- Final precision/recall remain low, showing the limits of landing-level aggregate features
 
 **Future work:**
-- Sequence models (LSTM) on per-second ADS-B trajectory
-- Airport-specific fine-tuning
+- extract raw ADS-B trajectory time-series features
+- speed/descent/altitude stability during final approach
+- runway alignment and lateral deviation over time
+- airport-specific calibration
+- sequence models such as LSTM/Transformer
 
-**Final line (bold):**
-> "Now we'll run a live demo."
-
----
-
----
-
-# DEMO SCRIPT (5 minutes)
-
-## Before class — checklist (do these at home, verify everything works):
-
-```
-□ docker compose up  →  container starts, no errors
-□ Open http://localhost:8000  →  page loads
-□ Fill in normal scenario  →  prediction shows low probability
-□ Fill in bad weather scenario  →  prediction shows higher probability
-□ /health endpoint  →  {"status": "ok"}
-□ Have terminal visible to show "docker compose up" output
-```
+**Final line:**
+> "The current system is a transparent baseline; the next leap requires raw approach trajectory dynamics."
 
 ---
 
-## Demo flow (5 minutes in class):
+# Demo Script
 
-### Step 1 — Show Docker running (1 min)
-Open terminal, run:
+## 1. Start the app
+
 ```bash
-docker compose up
+/Users/berkinyazici/Desktop/ITU\ CS/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
-Say: *"This is the entire system starting up in one command. The container loads the
-pre-trained MLP model automatically."*
 
-Show the startup log lines, wait for "Application startup complete."
+Open:
 
----
-
-### Step 2 — Open the web interface (30 sec)
-Open browser → `http://localhost:8000`
-
-Say: *"This HTML interface runs inside the same Docker container.
-Let's try a normal landing first."*
-
----
-
-### Step 3 — Normal landing scenario (1 min)
-Fill in:
-- Airport: `EDDF`, Runway: `25L`, WTC: `H`, Type: `A320`
-- Glide slope: `3.0`, Runway length: `4000`
-- Wind: `8 kt`, Visibility: `9999 m`, Temp: `18 °C`
-- Month: `6`, Hour: `10`
-
-Click **Predict**
-
-Expected: low go-around probability (~15–25%)
-
-Say: *"Frankfurt, clear weather, standard conditions — the model assigns low go-around risk."*
-
----
-
-### Step 4 — High-risk scenario (1 min)
-Fill in (or click **Fill Sample Input**, then modify):
-- Airport: `KSAN`, Runway: `27`, WTC: `H`, Type: `B738`
-- Glide slope: `3.0`, Runway length: `2865` (short runway!)
-- Wind: `25 kt`, Wind direction: `090` (crosswind!), Gust: `35`
-- Visibility: `800 m`, Precipitation: `RA`, Obscuration: `FG`
-
-Click **Predict**
-
-Expected: higher go-around probability
-
-Say: *"San Diego's short runway, strong crosswind, low visibility and fog — the model
-assigns higher risk. The probability bar and label update in real time."*
-
----
-
-### Step 5 — Show API directly (30 sec)
-Open new browser tab or show in terminal:
-```bash
-curl http://localhost:8000/health
+```text
+http://127.0.0.1:8000
 ```
-Say: *"The system also exposes a JSON API endpoint that can be queried programmatically."*
 
----
+## 2. Show ranked inputs
 
-### Step 6 — Wrap up (30 sec)
-Say: *"To summarize: a single Docker container, a trained MLP model, a FastAPI backend,
-and an HTML interface — all running with one command. Thank you."*
+Point out:
+- `wind_gust_knts` is rank #1
+- weather code fields are near the top
+- lower-ranked fields are still available but visually lower priority
+
+## 3. Fill sample input
+
+Click **Fill Sample Input**.
+
+Explain:
+> "Derived features are computed by the backend. The user cannot edit them directly."
+
+## 4. Modify important fields
+
+Change:
+
+```text
+wind_gust_knts: 18 -> 35
+wind_speed_knts: 12 -> 25
+visibility_m: 8000 -> 1000
+weather_precipitation: RA
+weather_obscuration: FG
+```
+
+Show:
+- derived gust spread changes
+- low visibility flag changes
+- predicted probability changes
+- local sensitivity panel shows plus/minus effects
+
+## 5. Close
+
+Say:
+> "This demonstrates the full loop: leakage-controlled features, imbalance-aware modeling, ranked feature importance, backend-derived features, and local what-if sensitivity."

@@ -1,0 +1,41 @@
+{
+  "model": "lda",
+  "feature_set": "context_metar_engineered",
+  "best_threshold": 0.29240137833259866,
+  "threshold_metric": "f2",
+  "negative_ratio": 10.0,
+  "validation_accuracy": 0.985112,
+  "validation_precision": 0.018293,
+  "validation_recall": 0.064286,
+  "validation_f1": 0.028481,
+  "validation_roc_auc": 0.623473,
+  "validation_average_precision": 0.008147,
+  "validation_confusion_matrix": [
+    [
+      81238,
+      966
+    ],
+    [
+      262,
+      18
+    ]
+  ],
+  "validation_threshold": 0.5,
+  "test_accuracy": 0.964437,
+  "test_precision": 0.009985,
+  "test_recall": 0.095406,
+  "test_f1": 0.018078,
+  "test_roc_auc": 0.651502,
+  "test_average_precision": 0.006714,
+  "test_confusion_matrix": [
+    [
+      79514,
+      2677
+    ],
+    [
+      256,
+      27
+    ]
+  ],
+  "test_threshold": 0.29240137833259866
+}

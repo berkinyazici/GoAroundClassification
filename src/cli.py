@@ -37,11 +37,24 @@ Commands:
     sp.add_argument("--sample-frac", type=float, default=None)
     sp.add_argument("--top-airports", type=int, default=None)
 
-    sub.add_parser("train-lda")
-    sub.add_parser("train-logreg")
-    sub.add_parser("train-tree")
-    sub.add_parser("train-mlp")
-    sub.add_parser("train-lightgbm")
+    def add_train_args(name: str):
+        train_parser = sub.add_parser(name)
+        train_parser.add_argument("--sample-frac", type=float, default=None)
+        train_parser.add_argument("--negative-ratio", type=float, default=10.0)
+        train_parser.add_argument(
+            "--feature-set",
+            choices=["context_only", "context_metar", "context_metar_engineered", "all"],
+            default="all",
+        )
+        return train_parser
+
+    add_train_args("train-lda")
+    add_train_args("train-logreg")
+    tree_parser = add_train_args("train-tree")
+    tree_parser.add_argument("--n-estimators", type=int, default=200)
+    tree_parser.add_argument("--max-depth", type=int, default=15)
+    add_train_args("train-mlp")
+    add_train_args("train-lightgbm")
     sub.add_parser("select-best-model")
     sub.add_parser("evaluate")
     sub.add_parser("error-analysis")
@@ -60,15 +73,36 @@ Commands:
         from src.data.make_splits import make_splits
         make_splits(sample_frac=args.sample_frac, top_airports=args.top_airports)
     elif cmd == "train-lda":
-        from src.models.train_lda import main as fn; fn()
+        from src.models.train_lda import FEATURE_SETS, train_lda
+        feature_sets = FEATURE_SETS if args.feature_set == "all" else [args.feature_set]
+        for feature_set in feature_sets:
+            train_lda(feature_set, args.sample_frac, args.negative_ratio)
     elif cmd == "train-logreg":
-        from src.models.train_logreg import main as fn; fn()
+        from src.models.train_logreg import FEATURE_SETS, train_logreg
+        feature_sets = FEATURE_SETS if args.feature_set == "all" else [args.feature_set]
+        for feature_set in feature_sets:
+            train_logreg(feature_set, args.sample_frac, args.negative_ratio)
     elif cmd == "train-tree":
-        from src.models.train_tree import main as fn; fn()
+        from src.models.train_tree import FEATURE_SETS, train_tree
+        feature_sets = FEATURE_SETS if args.feature_set == "all" else [args.feature_set]
+        for feature_set in feature_sets:
+            train_tree(
+                feature_set,
+                n_estimators=args.n_estimators,
+                max_depth=args.max_depth,
+                sample_frac=args.sample_frac,
+                negative_ratio=args.negative_ratio,
+            )
     elif cmd == "train-mlp":
-        from src.models.train_mlp import main as fn; fn()
+        from src.models.train_mlp import FEATURE_SETS, train_mlp
+        feature_sets = FEATURE_SETS if args.feature_set == "all" else [args.feature_set]
+        for feature_set in feature_sets:
+            train_mlp(feature_set, args.sample_frac, args.negative_ratio)
     elif cmd == "train-lightgbm":
-        from src.models.train_lightgbm import main as fn; fn()
+        from src.models.train_lightgbm import FEATURE_SETS, train_lightgbm
+        feature_sets = FEATURE_SETS if args.feature_set == "all" else [args.feature_set]
+        for feature_set in feature_sets:
+            train_lightgbm(feature_set, args.sample_frac, args.negative_ratio)
     elif cmd == "select-best-model":
         from src.models.select_best_model import main as fn; fn()
     elif cmd == "evaluate":

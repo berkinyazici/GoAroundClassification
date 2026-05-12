@@ -19,12 +19,13 @@
     <h2>Input Features</h2>
 
     <div style="font-size:0.82rem; color:#64748b; margin-bottom:1rem;">
-      Fill in any known features. Leave unknown fields empty — they will be imputed by the model.
+      Fields are ordered by permutation importance for the selected final model. Higher ranked fields changed the model's PR-AUC most when shuffled.
     </div>
 
-    <!-- Operational / Context -->
-    <h3 style="font-size:0.88rem; color:#7dd3fc; margin-bottom:0.8rem;">Operational &amp; Context</h3>
-    <div class="form-grid">
+    <div id="importance-summary" class="importance-summary"></div>
+
+    <h3 style="font-size:0.88rem; color:#7dd3fc; margin-bottom:0.8rem;">Ranked Model Inputs</h3>
+    <div id="ranked-feature-grid" class="form-grid">
       <div class="field"><label for="airport">Airport (ICAO)</label><input id="airport" placeholder="e.g. EDDF" /></div>
       <div class="field"><label for="runway">Runway</label><input id="runway" placeholder="e.g. 25L" /></div>
       <div class="field">
@@ -47,23 +48,11 @@
           <option value="0">No</option><option value="1">Yes</option>
         </select>
       </div>
-      <div class="field"><label for="n_approaches">Number of Approaches</label><input id="n_approaches" type="number" placeholder="e.g. 1" /></div>
-      <div class="field"><label for="n_rwy_approached">Runways Approached</label><input id="n_rwy_approached" type="number" placeholder="e.g. 1" /></div>
       <div class="field"><label for="glide_slope_angle">Glide Slope Angle (°)</label><input id="glide_slope_angle" type="number" step="0.1" placeholder="e.g. 3.0" /></div>
       <div class="field"><label for="rwy_length">Runway Length (m)</label><input id="rwy_length" type="number" placeholder="e.g. 4000" /></div>
-    </div>
-
-    <!-- Time features -->
-    <h3 style="font-size:0.88rem; color:#7dd3fc; margin:1.2rem 0 0.8rem;">Time</h3>
-    <div class="form-grid">
       <div class="field"><label for="month">Month (1–12)</label><input id="month" type="number" min="1" max="12" placeholder="e.g. 5" /></div>
       <div class="field"><label for="day_of_week">Day of Week (0=Mon)</label><input id="day_of_week" type="number" min="0" max="6" placeholder="e.g. 2" /></div>
       <div class="field"><label for="hour_utc">Hour UTC (0–23)</label><input id="hour_utc" type="number" min="0" max="23" placeholder="e.g. 14" /></div>
-    </div>
-
-    <!-- METAR -->
-    <h3 style="font-size:0.88rem; color:#7dd3fc; margin:1.2rem 0 0.8rem;">METAR Weather</h3>
-    <div class="form-grid">
       <div class="field"><label for="wind_speed_knts">Wind Speed (kt)</label><input id="wind_speed_knts" type="number" step="0.1" placeholder="e.g. 12" /></div>
       <div class="field"><label for="wind_dir_deg">Wind Direction (°)</label><input id="wind_dir_deg" type="number" placeholder="e.g. 270" /></div>
       <div class="field"><label for="wind_gust_knts">Wind Gust (kt)</label><input id="wind_gust_knts" type="number" step="0.1" placeholder="e.g. 18" /></div>
@@ -88,6 +77,15 @@
     <div id="error-box"></div>
   </div>
 
+  <!-- Derived feature panel -->
+  <div class="card">
+    <h2>Derived Features</h2>
+    <div class="derived-note">
+      These values are calculated by the backend from the editable fields above. They are read-only so the model input stays physically consistent.
+    </div>
+    <div id="derived-grid" class="derived-grid"></div>
+  </div>
+
   <!-- Result panel -->
   <div class="card" id="result-panel">
     <h2>Prediction Result</h2>
@@ -104,6 +102,7 @@
     <div class="bar-track"><div class="bar-fill-nl" id="bar-nl" style="width:0%"></div></div>
 
     <div class="meta" id="result-meta"></div>
+    <div id="sensitivity-panel" class="sensitivity-panel"></div>
   </div>
 
   <p class="disclaimer">

@@ -1,0 +1,41 @@
+{
+  "model": "mlp",
+  "feature_set": "context_metar_engineered",
+  "best_threshold": 0.35330068400109166,
+  "threshold_metric": "f2",
+  "negative_ratio": 10.0,
+  "validation_accuracy": 0.991368,
+  "validation_precision": 0.013514,
+  "validation_recall": 0.021429,
+  "validation_f1": 0.016575,
+  "validation_roc_auc": 0.622476,
+  "validation_average_precision": 0.00718,
+  "validation_confusion_matrix": [
+    [
+      81766,
+      438
+    ],
+    [
+      274,
+      6
+    ]
+  ],
+  "validation_threshold": 0.5,
+  "test_accuracy": 0.980394,
+  "test_precision": 0.008837,
+  "test_recall": 0.042403,
+  "test_f1": 0.014625,
+  "test_roc_auc": 0.632658,
+  "test_average_precision": 0.006255,
+  "test_confusion_matrix": [
+    [
+      80845,
+      1346
+    ],
+    [
+      271,
+      12
+    ]
+  ],
+  "test_threshold": 0.35330068400109166
+}
